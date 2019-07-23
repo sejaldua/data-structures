@@ -1,0 +1,120 @@
+COMP 15 Homework 3: Grocery Sim
+Sejal Dua (sdua01)
+01/October/2018
+
+Program Purpose:
+The purpose of Homework 3 was to apply our knowledge of queues
+and prior data structures we have learned about (either linked lists or
+dynamic arrays) to distribute and process shoppers through the checkout
+lanes of a grocery store. 
+
+Acknowledgements: 
+>>> The TAs in Halligan (specifically, Kevin, Aditi, & Favour)
+>>> Lab 3
+>>> Conceptual influence from Suki, Zhe, and Ryan
+
+Files:
+- CheckoutQueue.h/.cpp: Implementation and interface of the 
+CheckoutQueue class. Contains a constructor and destructor, public 
+isEmpty, size, totalItems, enqueue, dequeue, and front functions. The 
+front function, especially, is important for abstraction purposes. As 
+far as private functions, it contains an expand function, which follows 
+the same pseudocode as that which we worked on in HW1 ArrayList.cpp.
+- testCheckoutQueue.cpp: Initializes an empty checkout queue and some 
+shoppers. It then enqueues and prints information for all the shoppers.
+Through all this, it should be testing if the expand function is working 
+because the enqueue function will need to call the expand function if 
+the capacity is not big enough to enqueue another shopper. It then
+dequeues all shoppers except for one, and since dequeue-ing takes place
+at the front, shopper 4 should remain. This hypothesis is verified, and 
+then isEmpty is finally called to ensure that the dequeuing process went
+through without a hitch!
+- GrocerySim.h/.cpp: Implementation and interface of the CheckoutQueue 
+class. Simulates the flow of shoppers and processing transactions in a 
+grocery store or supermarket. Contains a constructor and destructor, a run 
+function, and 3 helper functions: populate_storage, print, and 
+distribute. The run function is the function that simulates all of the 
+processes that occur in thestore system, and helper functions are simply 
+used for modularity and ease of understanding.
+
+
+Compile/Run:
+* Compile by typing "make driver"
+* Run by typing "./driver # # # ___.txt"
+	* Special Cases:
+		> "./driver 1 0 0 shoppers.txt"
+		> "./driver 10 10 10 shoppers.txt"
+
+Outline of Data Structures/Algorithms
+This homework was super interesting in terms of data structures and 
+algoriths. With this homework, there was an increased amount of freedom
+to use whichever data structures seemed most intuitive to us. I chose
+to use a circulary dynamic array and queue structure because checkout
+lanes follow the LIFO principle, so enqueueing and dequeueing is essential
+to create the most efficient program. I elected to use dynamic arrays
+instead of linked lists because, quite honestly, the lab employed
+dynamic arrays and I wanted to familiarize myself with the concept of 
+first, back, and modulo. The lab was a great sample of how to execute
+the structure/architecture needed for this homework. In hindsight,
+I think I may have also enjoyed doing this homework using linked lists.
+With many insertions, linked lists would be much easier. My favorite
+part of this homework was when the revelation came to me to store 
+the shoppers from the infile in a storage array, but not just any old
+array. I made a dynamically allocated storage array that was an instance
+of CheckoutQueue. Recognizing that storage array would need to have the
+same capabilities and functionality as a checkout lane full of shoppers
+was a breakthrough for me. I was then able to draw out what the storage
+array looks like in memory and what functions need to be called when it
+is time to dequeue the first shopper in storage, and enqueue it into the
+smallest checkout lane. In more ways than one, this GrocerySim homework
+was algorithmic because GrocerySim.h is the overarching function that
+controls instances of CheckoutQueues, which happen to include shopper
+objects.
+
+
+Testing:
+
+[Process of Testing]
+- Unit testing: I tested CheckoutQueue.cpp directly after I wrote it.
+I did this by writing testCheckoutQueue.cpp. I went through the
+CheckoutQueue.h and made sure to call all functions available to me. 
+- I tested GrocerySim.cpp (which was extremely buggy at first) by creating
+a .txt file (fourth parameter) called shoppers.txt. This .txt file matched
+the spec verbatim. See below:
+1 6
+2 12
+5 3
+I attempted to obtain the correct outstream when typing in 
+./driver 1 0 0 shoppers.txt and adjusted my program accordingly when
+I did not obtain the output written in the spec.
+
+[Bugs]
+- Some bugs that I ran into that were particularly hard to fix/debug
+were 'double free or corruption', 'free(): invalid next size (fast)',
+and 'abort / runtime error / error_queue' (a runtime error that I threw 
+in my CheckoutQueue.cpp). These caused me quite a bit of trouble, but I
+soon learned that it was all a matter of deallocating memory and oftentimes
+attempting to deallocate memory twice instead of once. As for the runtime
+errors, I debugged those by including cerr statements within functions
+to isolate what points of the program were reached and which ones created
+infinite loops.
+
+[Testing on inputs of different sizes]
+- This wasn't as relevant to this homework assignment because once I knew
+that my expand checkout queue function worked, enqueuing 20 vs. 20000
+shoppers would make no difference. Instead, though, I played around with
+adjusting capacity sizes and feeding in different parameters to see how
+different parameters could affect checkout lane / shopper flow in the store
+simulation.
+
+[Base Cases and Edge Cases]
+- I don't understand what this means very well, but I think ./driver 1 0 0
+was a base case that I tested. Essentially, I tried to break my 
+CheckoutQueue.cpp in every way I could think of.
+
+
+
+I used the following commands to compile and run my test:
+* clang++ -Wall -Wextra testCheckSequence.cpp CheckoutSequence.cpp -o test
+* ./test
+* valgrind ./test
