@@ -1,0 +1,149 @@
+COMP 15 Homework 4: Binary Search Trees
+Sejal Dua (sdua01)
+17/October/2018
+
+Description: A binary search tree has the invariate that all nodes to the left
+of a node are smaller in value, and all nodes to the right are larger in value.
+Each instance of a binary search tree (BST) includes the following functions: 
+find_min, find_max, contains, insert, remove, tree_height, node_count, 
+count_total, pre_order_copy, post_order_delete, find_parent, and some private
+helper functions made to modularize the code.
+
+Program Purpose:
+The purpose of Homework 4 was to apply our knowledge of recursion, binary
+search trees, and linked lists to implement a binary search tree that
+successfully handles and keeps track of all elements / children in it.
+
+Acknowledgements: 
+>>> The TAs in Halligan
+>>> Lecture Slides
+>>> Conceptual influence from Ryan
+
+Files:
+- main.cpp: driver file. It contains a main which runs tests to insert nodes
+into the BST and remove nodes from the BST as well. All of the nodes are
+inserted at the start of the main via a for loop. Then, the BST is copied
+with the help of the copy constructor. Multiple edge case removals are
+tested, and the function print_tree_details is called after each removal
+to print the modified tree and ensure that all of the mini recursive
+functions are updating properly.
+- BinarySearchTree.h/.cpp: Implementation and interface of the 
+BinarySearchTree class. Contains a constructor, a destructor, a copy 
+constructor, an assignment overload, and some and some functions that induce
+/ enter recursive calls. In addition, there are many private member functions
+and private recursive helper functions that help implement the class as
+efficiently and seemlessly as possible. Everything happens on the private
+end, so what the computer is executing is all internal within the class!
+- pretty_print.cpp: (was written for us) formats the tree, from root to
+nodes to branches to spacing, and everything in between.
+- README: this
+- Makefile: (also written for us) specifies dependencies and includes
+clean and provide, which are extremely useful.
+
+
+Compile/Run:
+* Compile by typing "make"
+* Run by typing "./hw4"
+* OR link commands by typing "make && ./hw4"!
+* Check for leaks by typing "valgrind ./hw4"
+
+Outline of Data Structures/Algorithms
+I used a binary search tree to implement this assignment (we were assigned to
+use BSTs). A binary search trees is a highly versatile data structure, as was
+evident in this homework assignment. Their invariate can be an extremely useful
+tool if the user wants to complete a task involving storing and access data
+in an organized fashion. The run time of binary search trees is essentially
+just O(h), where h is the height of the tree. The one great part about BSTs
+is that there is not really any one operation you can't implement with them.
+Whereas dynamically allocated arrays struggle with insertions and deletions
+and linked lists struggle with traversals / searches, some would argue that
+BSTs don't have a vulnerable point. They can find_min, find_max, check if the
+tree contains a particular value, insert, compute predecessor, compute 
+successor, handle deletions, etc. I guess one annoyance a programmer could
+face when using BSTs is the factual reality that executing removals is,
+without a doubt, going to involve a crazy amount of edge cases. Organizing
+conditionals in the remove function can be a bit of a hassle, but the
+way recursion handles most things for us makes it all worthwhile.
+
+
+Testing:
+
+[Process of Testing]
+- Unit testing: I made a test.cpp right when I started this homework assignment
+and instantiated some arbitrary binary search tree by essentially copying and
+pasting the first few lines of the main() in main.cpp. I modified the values
+in the binary search tree and inserted them with a for loop. Then, 
+I called each function directly after writing it to see if my code was working
+properly. I knew that debugging was going to be a pain for this assignment
+because there are so many functions and there's such a high likelihood of 
+forgetting to reassign a parent pointer or something. The unit testing that I
+did on each function certainly helped, but that was just one aspect of the
+testing I did. Most of the errors I faced had to do with the way my functions
+interacted with each other.
+- Start->Finish testing: I am sure this testing has an official name, but one
+thing I found trememndously helpful was literally copying and pasting the code
+from main.cpp to my test.cpp program. I then modified from there. Since I 
+was eventually able to compile and run the main.cpp driver without a hitch, 
+I got rid of all of the lines that involve using a copy constructor, and I 
+instead just populated a BST, and removed all of the nodes randomly and one
+at a time. This method of testing brought my attention to some odd edge cases
+that I would have otherwise failed to consider. See below.
+
+
+[Bugs]
+Some bugs I spent a lot of time and energy troubleshooting included:
+1. seg faulting when I tried to remove a node with two children.
+>>> the issue was that find_parent was not returning what I wanted it to return
+due to the fact that I had already replaced node with max's contents, and then
+was trying to find max's parents by comparing its value with that of node's–
+but the two had the same value!
+2. seg faulting when I tried to remove the one remaining node in the tree.
+>>> the problem was that the root does not have a parent, so an order of 
+business I had to take care of was first setting the root to NULL and then
+deleting node.
+3. seg faulting when I tried to remove the root when it was technically a
+one-child node.
+>>> same fix as bug #2.
+4. a warning I got all the time: control may reach end of non-void function.
+>>> needed to return something at the end of base case and also return 
+something outside of all the else-ifs.
+5. illegal instruction.
+>>> caused by me copy and pasting code from find_min to find_max and forgetting
+to change node->right to node->left.
+6. remove node with two children when the max of the node's left has a count
+of more than 1 --> duplicate node (not what we want).
+>>> after finding the max of the left, I set max's count to 1 so that it is 
+ready to delete.
+
+
+[Testing on inputs of different sizes]
+- I made a BST of just one node (the root) and removed it.
+- I made a really big BST (I even had to expand my terminal window to view it
+in its printed form)
+Observations:
+> Both handled the functions I tested without error or unexpected results
+> The smaller tree allowed me to check the print_tree_details output against
+the mental math I computed in my head.
+
+[Base Cases and Edge Cases]
+* node we wish to remove does not exist
+* removal of leaf node
+* removal of leaf node where node == root
+* removal of node with left-child
+* removal of node with left-child where node == root
+* removal of node with right-child
+* removal of node with right-child where node == root
+* removal of node with two children
+* removal of node with two children where max == node->left
+* removal of node with count > 1
+* insertion of new node
+* insertion of root node into an empty BST
+* insertion of node that already exists in BST
+
+
+[Logistics of Testing]
+I used the following commands to compile and run my test:
+* clang++ -Wall -Wextra -std=c++11 BinarySearchTree.cpp pretty_print.cpp
+test.cpp -o test
+* ./test
+* valgrind ./test
