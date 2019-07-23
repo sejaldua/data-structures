@@ -1,0 +1,218 @@
+COMP 15 Proj 1: The Biologist's Grep
+Sejal Dua (sdua01)
+31/October/2018
+
+Description: 
+
+Our task for this project was to help a hypothetical Tufts
+biology lab with DNA sequencing. A DNA sequence consists of long chains made
+up of 4 different nitogenous bases: Adenine, Guanine, Cytosine, and Thymine
+(A, C, G, T). Some sub-tasks we executed to best help the biology lab included
+checking if a sequence in the file is one they have seen before or something
+new. Furthermore, we also looked for partial matches of sequences. To give
+something of value to the biology lab, our mission was to create a program
+that can process a series of requests from an input file. The three requests
+the program had to be able to process were insert, query, and remove.
+
+Program Purpose:
+
+The purpose of this project was to use the knowledge we previously applied in
+HW4 to work with tries, which involve slightly more complex operations than
+binary search trees because they do not have the invariant of being able
+to compare node data via inequalities. We were just introduced to all types
+of trees in lecture, but working with letters (hence, strings and characters)
+is relatively new territory. The big picture goal of Project 1 was to improve
+our level of comfort with trees and test our ability to make design decisions
+while being cognizant of space and time efficiently.
+
+Acknowledgements: 
+
+>>> The TAs in Halligan (specifically, KEVIN, Saad, Clara)
+>>> Lecture Slides
+>>> stack overflow for teaching me how to use tuples (did not go thru with it)
+>>> James
+>>> Ryan
+>>> Jake
+
+
+Files:
+
+- main.cpp: driver file. Opens an ifstream object and ofstream object
+to parse requests from the user. The three requests are 'i', 'q', or 'r',
+which respectively execute insert, query, and remove functions and then
+deposit the output into an output object to be diffed.
+- Trie.h/.cpp: Implementation and interface of the 
+Trie class. Contains a constructor, a destructor, a print all sequences
+function, the major 3 requests (insert, remove, and query), of course, a
+contains function (for the easy/normal cases), and some functions that 
+induce/ enter recursive calls. In addition, there are many private member 
+functions that help implement the class as efficiently and seemlessly as 
+ossible. All internal processing is private to the class, so what the 
+computer is executing is not relevant for the user's purposes. 
+- README: this
+- Makefile: specifies dependencies, sets the name of the executable to be
+SeqMatch and includes things like clean, provide, and valgrind, which are 
+extremely useful.
+
+
+Compile/Run:
+
+* Compile by typing "make"
+* Run by typing "./SeqMatch"
+* OR link commands by typing "make && ./SeqMatch"!
+* Check for leaks by typing "valgrind ./SeqMatch"
+
+
+Outline of Data Structures/Algorithms:
+
+For a while I tried to implement my trie in some funky ways. However, this
+proved to be fruitless for me and then I started running out of time. I
+implemented my data structure in the most simplistic way I could think of,
+but still there are some complexities. For example, I made my code more
+algorithmic and elegant as opposed to storing data or letters, in this case,
+for each DNA base. This came with some advantages and disadvantages. I also
+elected to organize my pointers into an array of pointers, which was also
+for iterative purposes.
+Advantages:
+- I was able to use for loops for most functions
+- I kept my function lengths shorter
+- I took up less space, technically
+Disadvantages:
+- I had to make a static string variable called BASES which holds "ACTG?*"
+so that I could index into it and know which next I wanted to get when working
+with a TrieNode
+- I had to use top-down recursion, which made my brain's runtime slower
+
+Tries were perfect for this project because their big 0 is either the
+height of the trie or the length of the word you are working with. They
+do not take very long to execute a query because everything is recursive
+so there is no need to search through every single letter in the trie. We
+just care about generation-by-generation recursive traversals, which is
+great news for us!
+As far as space complexity, they could be a bit more efficient (especially
+when you consider what happens when you insert something like "TCG?A??A?"), 
+but here, each individual letter in the DNA sequence was relevant to us and 
+important for functional use.
+
+I would have liked to venture into the territory of compressing tries, but
+(1) the question marks made the trie largely dispersed / wide, so there was
+little need to compress anything and (2) I did not get around to it due to
+all the time I spent changing my implementation method. 
+
+Explanation of how I handled insert, remove, and query requests:
+INSERT: 
+Base case: the sequence is fully processed and we are at the end of the word
+we are trying to insert.
+Recursively traverse down thru current TrieNodes, inserting new ones as needed.
+REMOVE:
+Base case: return false if we have "bottom'd out" so that we can then start
+recursing back up through the nodes in the trie
+Recursively traverse through the sequence we are trying to delete.
+Once we have arrived, flip the bool end of sequence marker to false so that
+even if we cannot safely delete the node, at least the node is lazily deleted.
+Then if we are at a leaf node and the node is not the root, actually remove it.
+QUERY:
+Base BASE case: The exact query sequence exists (letter-for-letter) --> 
+return it back out and report 100% accuracy
+If we do not have the ideal base case situation above, enter the recursive
+helper function, which does not have a base case.
+Algorithm is completely divided into two separate recursive functions
+- get longest prefix (? characters are handled here)
+- get shortest suffix (* characters are handled here)
+Concatenate prefix and suffix and return that as the closest match
+
+
+Testing:
+
+[Process of Testing]
+- Unit testing: I made a Test.cpp right when I started this homework assignment
+and instantiated some arbitrary trie. I modified the values
+in the binary search tree and inserted them with a for (str : seqs[]) loop. 
+Then, I called each function directly after writing it to see if my code was
+working properly. I knew that debugging was going to be a pain for this 
+assignment because there are so many functions and there's such a high 
+likelihood of forgetting to reassign a parent pointer or something. The unit 
+testing that I did on each function certainly helped, but that was just one 
+aspect of the testing I did. Most of the errors I faced had to do with the way
+my functions interacted with each other.
+- Compare testing: I tried all the given example cases in the spec to make
+sure I was getting the expected results.
+- Imaginitive testing: I thought of tricky edge cases and drew them out
+to compare my output with what I would expect to be the best returned
+string (according to my understanding of the task).
+- Execution example 1
+- Execution example 2
+
+[Bugs]
+Some bugs I spent a lot of time and energy troubleshooting included:
+1. SEG FAULTS
+2. linker command error
+3. Abort() ......
+4. suffix was not being reset when we tried traversing down a different path
+(cout-ed "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC...")
+5. for a while, I was trying to implement ArrayList.cpp and my understanding
+of pointers and how to call functions on objects that I was referencing
+via pointers is shaky
+
+
+[Testing on inputs of different sizes]
+- Note: did not need to consider insert, query, or remove on an empty string
+- I inserted a sequence of just one letter and removed it
+- I made a really big Trie and inserted and removed everything
+- Did not get to much query testing because I went back and forth on how to 
+execute this task (I was using tuples for a while, but then I even toyed with 
+creating an ArrayList.cpp/.h for a while – I was very indecisive)
+
+Observations:
+> Both handled the functions I tested without error or unexpected results
+> My inspect_root and inspect_node debugging functions really helped me
+visualize what node has which pointers
+
+[Base Cases and Edge Cases]
+--- insert ---
+* word we wish to insert is already contained in trie
+* word we wish to insert is a subsequence of word already contained in trie
+* subsequence of word we wish to insert is already contained in trie
+--- remove ---
+* word we wish to remove is contained in trie
+* word we wish to remove is a subsequence of word already contained in trie
+* subsequence of word we wish to remove is already contained in trie
+--- query ---
+* word we are querying is identical to a sequence in the trie
+* word we are querying is a perfect match and more
+* the word with a higher percentage isn't necessarily the right one
+* the word with the highest percentage match is the right one
+* tiebreaker: need to return the word that is shortest
+* tiebreaker: need to return the word that comes alphabetically first
+* special characters: ? (singular)
+* special characters: ? (at end)
+* special characters: multiple ?s
+* special characters: * (always at end)
+
+[Logistics of Testing]
+I used the following commands to compile and run my test:
+* clang++ -Wall -Wextra -std=c++11 Trie.cpp Test.cpp -o test
+* ./test
+* valgrind ./test
+
+
+What I learned from this project
+- When the complexity of implementation starts to get more difficult, being 
+able to debug my own code will be critical in order to successfully
+complete tasks. When I would go to office hours to try and figure out
+why I was seg-faulting or getting some nonsensical result, I would have to
+spend so much more just getting them caught up to speed on the quirks of
+my implementation. In the future, I want to be confident enough in my skills
+to insert cerr statements on my own and track down the problem.
+- While it is good to have faith in ideas for implementation, I need to learn
+not to pursue the less ideal idea for too long. I caught myself doing that
+twice for this project, and that caught me. I was too indecisive and cared
+too much about the "ideal solution." The truth is any implementation is good
+as long as it works.
+- My organization and value for elegant, concise solutions is going to be
+an asset to me. So many people I talked to "duct tape'd" their code to get
+it to work. The one thing this means for me is that I have to start projects
+much, much earlier.
+- How ASCII characters work
+- Sometimes being in Haligan isn't going to fix my problems. I need to know
+how to make the best use of my time.
