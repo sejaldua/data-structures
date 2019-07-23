@@ -1,0 +1,29 @@
+Lab 3: Stacks and Queues
+Sejal Dua
+
+Purpose of the program:
+To get familiarized with dynamic arrays, stacks, and queues by helping a DJ create a party playlist.
+
+The files that you provided and a short description
+of each file and its purpose:
+CircularSequence.cpp --- client which implements dynamic arrays in a circular fashion with a front index and back index
+CircularSequence.h --- header file for circular sequence class
+SequenceStack.cpp --- client which was built using the circular sequence class [LIFO]
+SequenceQueue.cpp --- client which was built using the circular sequence class [FIFO]
+
+How to compile and run your program:
+make partyPlaylist
+./partyPlaylist
+at the end:
+valgrind --leak-check=full ./partyPlaylist
+
+Outline of data structures and algorithms you used:
+dynamically-expanding sequence list
+stack
+queue
+
+Details and an explanation of how you tested various parts
+of assignment and the program as a whole:
+checking standard out
+checking for memory leaks
+valgrind --leak-check=full ./partyPlaylist

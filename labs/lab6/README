@@ -1,0 +1,34 @@
+Lab 6: The Big Three
+Sejal Dua (sdua01)
+23/October/2018
+
+Description: For this lab, we wrote the big three!
+1. destructor
+2. copy constructor
+3. assignment (=) overload
+
+Acknowledgements: Lab TAs
+
+Files:
+- Abilities.cpp: implementation (where all the code we wrote is)
+- Abilities.h: declaration (includes lots of helpful variables)
+- HookBookBattles.h: implementation
+- HookBookBattles.h: Abilities Social Network
+- main.cpp: driver
+
+Compile/Run:
+Compile by typing "make" and run with "./hookbookBattles"
+
+Outline of data structure:
+linked list
+
+Concept:
+the big three
+
+Testing: 
+no testing required for this lab
+kept a close eye on output and memory leaks via valgrind
+
+BONUS:
+Implemented recursive functions, the first bullet of the Bonus. See getStrengthHelper and abilityCountHelper
+

@@ -1,0 +1,29 @@
+Lab 5: MAZES
+Sejal Dua (sdua01)
+16/October/2018
+
+Description: This lab helped us to understand recursion and backtracking.
+We solved a maze by leaving breadcrumbs and traveling in whatever
+cardinal direction was viable.
+
+Acknowledgements: Lab TAs
+
+Files:
+- maze.cpp: implementation (where all the code we wrote is)
+- maze.h: declaration (includes lots of helpful variables)
+- position.h: struct with cardinal directions and bounds tests
+- main.cpp: driver
+
+Compile/Run:
+Compile by typing "make" and run with "./mazeSolver"
+This will write the maze and solved maze to the standard out.
+
+Outline of data structure:
+maze array
+
+Concept:
+recursion
+
+Testing: 
+no testing required for this lab
+kept a close eye on output and how logical it was

@@ -1,0 +1,40 @@
+Lab 2: Linked Lists
+Sejal Dua
+
+Purpose of the program:
+To get familiarize with Linked Lists by taking in a list of
+planets and inserting them into the nodes of a linked list
+by way of either prepending (head first) or appending (at tail).
+
+The files that you provided and a short description
+of each file and its purpose:
+planet-driver.cpp --- client which implements Linked Lists to arrange planets in various orders
+LinkedList.h --- header file for linked list class
+LinkedList.cpp --- implementation for LinkedList class
+
+How to compile and run your program:
+make pirate-driver
+./pirate-driver
+at the end:
+valgrind --leak-check=full ./pirate_driver
+
+Outline of data structures and algorithms you used:
+Linked Lists
+
+Details and an explanation of how you tested various parts
+of assignment and the program as a whole:
+checking standard out
+checking for memory leaks
+valgrind --leak-check=full ./pirate_driver
+
+Which functions in the interface were easier to implement for
+linked lists compared to sequences? Why?
+- insertions (specifically inserting at the head) because there
+was no need to shift data over, just some adjusting of pointers
+
+Which functions in the interface were harder to implement for
+linked lists compared to sequences? Why?
+- insertion at the end of the linked list because it requires
+traversing through the entire linked list
+- deletion / the destructor because deletion also requires
+traversing through the linked list and using temp pointers
