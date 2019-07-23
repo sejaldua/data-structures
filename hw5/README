@@ -1,0 +1,287 @@
+/*********************************************************
+ * Sejal Dua
+ * Homework 5: graph traversal
+ * Comp 15 Fall 2018 
+ * Professor: Matias Korman
+ * 19/November/2018
+ *********************************************************/
+
+
+PROGRAM PURPOSE
+The purpose of this homework was to simulate the game Six Degrees of Kevin 
+Bacon (https://oracleofbacon.org/). Our task was to make a program that plays
+the game via interactive mode or file-based mode, depending on the user's 
+preference. The simulation involves accepting queries in the form of the names
+of two actors, and reporting (1) the "costar distance" and (2) the shortest
+path to get from the first actor to the second. This homework assignment 
+contains a partial implementation of Graph BFS traversal.
+
+
+ACKNOWLEDGEMENTS
+* Kevin J. Destin (a huge help)
+* Saad Mazhar
+* TAs in Halligan
+* Google and Kevin for teaching me about friend functions
+  https://www.tutorialspoint.com/cplusplus/cpp_friend_functions.htm
+* Stack overflow for teaching me about the << operator
+  https://msdn.microsoft.com/en-us/library/1z2f6c2k.aspx
+* Lab 9 BFS code
+* BFS Handout on Piazza
+
+
+FILES AND DESCRIPTIONS:
+main.cpp 			: main driver of the project. 
+				      Creates and runs an instance of SixDegrees 
+Actor.cpp 			: actor class with basic functions and 3 operator overloads
+Actor.h             : interface of actor class above
+Graph.cpp 		 	: graph class with extra helping tools to run DFS
+Graph.h 		 	: interface of graph class above
+LinkedList.cpp 		: simple template linked list class used for DFS
+LinkedList.h 		: interface of Linked list class above
+NodeType.h 			: interface of Nodetype class 
+                      (a simple struct used in the linked list class)
+Stack.cpp 			: simple template stack class used for DFS
+Stack.h 			: interface of Stack class above
+Queue.cpp 			: simple template queue class used for DFS
+Queue.h 			: interface of Queue class above
+SixDegrees.cpp      : class used to populate graph and run game simulation
+SixDegrees.h        : interface of SixDegrees class above
+actors.txt			: database of actors and the movies they have been in
+test_input.txt		: sample test input for the algorithm
+myoutput.txt        : test output (to diff with expected_output.txt)
+expected_output.txt : output that your assignment should give on test_input.txt
+README 				: this file
+
+COMPILE/RUN INSTRUCTIONS
+* sixdegrees simulation:
+	>>> compile using make sixdegrees
+	>>> run using ./sixdegrees [input file] for file-based mode
+		OR ./sixdegrees for interactive mode
+	>>> check for memory leaks by typing valgrind ./sixdegrees (input file)
+* test simulation:
+	>>> compile using make test
+	>>> run using ./test
+	>>> check for memory leaks by typing valgrind ./test
+
+
+DATA STRUCTURES / ALGORITHMS
+
+Graphs
+Graphs are often used to represent networks. If many things are connected and 
+there are multiple ways to describe a connection from one thing to another,
+graphs are our go-to. These connections can become relevant in the form of 
+connections from person to person or place to place, primarily. This is why
+graphs are often used for social networks and for travel-related problems.
+A vertex in the graph we made in this homework can take the form of an int,
+char, string, or Actor. This is why we templated our code. What good is it 
+if we can only traverse from one int to another? We should be able to find a
+path between strings, Actors, many things! An edge in a vertex represents the
+path / connection / link between two vertices. Edges can be represented by a
+2D adjacency matrix (see below) or an adjacencey list. For this assignment,
+we went with the adjacency matrix because it was most important to be able
+to quickly look up if an edge / connection exists between actors.
+
+Adjacency Matrix
+advantages: 
+	- O(1) lookup to tell if an edge exists
+	- extends to directed, pseudo and multigraphs
+	- simple to index into
+disadvantages:
+	- redundant info (top right part of matrix is symmetrical with bottom left)
+	- quadratic space
+
+Adjacency List
+advantages:
+	- good for graph variations
+	- space efficient
+		- O(n) linked lists
+		- O(E) nodes in total
+	- easy to loop / iterate over all edges
+disadvantages:
+	- not efficient when it comes to establishing edges between vertices
+	- not good for huge graphs with lots of neighbors --> exaggerated runtime
+	- hard to tell how many neighbors a given vertex has
+		- have to traverse through whole LL
+
+Big O Analysis
+- storage: O(|V|^2)
+- add vertex: O(|V|^2)
+- add edge: O(1)
+- remove vertex: O(|V|^2)
+- remove edge: O(1)
+- query: O(1)
+Summary: Querying, adding edges, and removing edges all take constant time! 
+This is great news for us!
+
+BFS Algorithm (and More About Graphs)
+BFS is used when we have a starting vertex a and ending vertex b, and we want 
+to find the path from a to b (or conclude that no valid path exists). In this
+assignment, we were working with undirected, unweighted graphs, but BFS also
+works on directed graphs. BFS guarantees that we will find the shortest path 
+from a to b (there can be serveral, but BFS will certainly find one). It is 
+called breadth-first because it finds every reachable vertex (neighbor) from a
+in k steps before it finds anything reachable in k+1 steps. In other words, we
+go level-by-level, instead of pursuing one pathway all the way to the end or 
+back to the start. The BFS algorithm involves marking vertices (similar to
+how Hansel & Gretel placed breadcrumbs on the road as they tried to find their
+way back home). It also uses some auxiliary data structures, including a queue
+called primary, a queue called neighbors, and a predecessor array.
+Primary Queue: 		Starting Vertex s is first thing to be enqueued. We 
+					dequeue from primary whenever we are ready to explore a 
+					given Vertex's neighbors.
+Neighbors Queue: 	Each time we dequeue from primary, we store its neighbors
+					in this queue for further updating and processing. We 
+					dequeue all of the items in this neighbors queue to 
+					complete our exploration of the vertex we had dequeued 
+					from primary. However, the caveat here is that we don't
+					execute a depth-first search as we process each element
+					in neighbors. We instead update our predecessors and 
+					enqueue items into primary so that they, too, can be
+					processed via our breadth-first traversal approach.
+Predecessor array:	Helps us keep track of our overall path from a to b. At a 
+					given moment, there is a curr_vertex (from primary) whose
+					neighbors we are processing (in neihbors). For each of the
+					neighbors, the predecessor in the path from a to b is the 
+					current vertex. The predecessor is constructed such that
+					position 0 holds A's predecessor, position 1 holds B's
+					predecessor, position 2 holds C's predecessor, etc. 
+					NULL_PRED is instantated to be -1 to indicate that a vertex
+					has no predecessor.
+
+Interaction between ADTS:
+For this assignment, we were given some very helpful implementations: 
+the LinkedList class, the Queue class, and the Stack class. I used each of
+these to my advantage. I used the LinkedList class to stores each Actor's
+movies. I used the Queue class to transfer objects from one queue to another
+(primary to neighbors, and vice versa) during my BFS. I used the Stack class
+to report my path, using a very nifty call sequence of "top-pop-top," I call
+it, which allowed me to report that Hilary Duff AND Steve Martin were in
+Cheaper By the Dozen together (or, to be more precise, Hilary Duff was in
+Cheaper By the Dozen with Steve Martin). This was a pretty cool little 
+modification.
+
+pseudocode:
+- clear all marks
+- initialize path array, filling each elem with NULL_PRED
+- instantiate a Queue (of Vertex) called primary
+- instantiate a Queue (of Vertex) called neighbors
+- enqueue start vertex in primary
+- instantiate a Vertex v1
+- initialize found to be false
+- while not found
+	- if primary is empty
+		- break
+	- v1 <-- dequeue front of primary
+	- if v1 has not been visited / is not marked
+		- mark v1
+		- get v1's neighbors (add to neighbors queue)
+		*** NOTE: this part is modularized ***
+		- while neighbors is not empty
+			- n1 <-- dequeue front of neighbors
+			- if n1 has not been visited / is not marked
+				- update predecessor
+				- enqueue n1 into primary
+			- if n1 is the end vertex we are looking for
+				- set found to true
+				- break
+- if found: report path from start to end
+- if not found: report no connection between start and end
+
+
+
+TESTING
+--- process of testing ---
+I unit tested as I went.
+As far as coding, I decided to take on Actor.cpp first.
+Naturally, I had to unit test that. The first two tests you see are unit tests
+for Actor.cpp. Once I knew that was working, I started writing the big 3 for
+the Graph class. My big three was completely wrong the whole time because it
+never occurred to me to unit test that right away. I was under the impression
+that I had to write other functions before even being able to test out my 
+big 3. That was a major setback!
+Fortunately, in order to test my SixDegrees class with the sample input files,
+I did not necessarily need to rely on my big 3 working. Therefore, I was able
+to test my populate graph and run functions with the file test_input.txt and
+via interactive mode as well. Once this was all working, there were some small
+tweaks I had to make. I was able to expose these minor errors with the help of
+my test-graph.cpp. I am pretty proud of the way I structured my test-graph.cpp.
+I essentially tested everything the spec told me to test and then tried to be
+as creative as I could. I seg faulted throughout my 10 tests, but eventually
+got rid of all the bugs in my code!
+
+--- mention of bugs ---
+  >> destructor seg fault
+  	** I was calling it twice, once in the Graph class destructor and another
+  	   time in my unnecessary SixDegrees destructor.
+  >> Abort()
+  	** I had a conditional that said "if (argc == 0)" which makes no sense. At
+  	   the time, I did not really know how argc works or what it is.
+  >> linker command errors
+  	** writing a .h file while simultaneously editing a .cpp tends to result in 
+  	   linker command errors.
+  >> interactive mode not working
+  	** I was not using while(getline(...) && getline(...)) properly, so my 
+  	   function would segfault when I CTRL+D'd.
+
+--- base/edge/corner cases ---
+	TEST 1: making 3 actors via parameterized constructor
+	TEST 2: making 2 actors via default constructor
+	TEST 3: testing auxiliary functions I wrote
+	TEST 4: testing assignment overload
+	TEST 5: testing copy constructor
+	TEST 6: testing templating (with ints and strings later)
+	TEST 7: test with vertices and no edges
+	TEST 8: test with vertices and one edge
+	TEST 9: test with vertices and multiple edges
+	TEST 10: test with null graph
+
+--- methodical testing approach ---
+I think what I have listed above is pretty methodical, but to specify more,
+I budgeted the entire day of Monday for testing. I flooded my big 3 functions
+and other functions with cerr statements to trace through my code. Once I felt
+like I had perfected functions that weren't working properly, I literally 
+thought of every possible way to break the program. I was very confused by 
+what the spec was saying and how to handle cases that aren't necessarily 
+mentioned by the spec. Piazza helped a little with that, but in general, I 
+think my understanding of the cases could be a little bit clearer. That being 
+said, I believe my program is robust. It sure was satisfying to play!
+
+
+OTHER
+README Give an overview of the classes/modules you use and how they interact. 
+Describe the ADTs you used in your program, as well as any key algorithms 
+(in particular, we’re looking for an understanding of the graph data structure,
+ and a high-level explanation of BFS) 
+ What did you find challenging in this assignment? 
+ - I found the moving parts of this assignment most challenging. Graphs
+   involve a lot of components, so it was tricky to make them interact with
+   each other. This new concept of testing as I go was also tough to get
+   adjusted to. Without testing, though, I literally would not have been able 
+   to compile and run until the very very end. It was absolutely necessary
+   for this assignment. Oddly enough, I found the big three more challenging
+   than I anticipated.
+ Which parts of your work are you most proud of?
+ - I really enjoyed writing the SixDegrees class. I thought I had some clever
+   ideas for how to parse the file and populate the graph. I also thought
+   my run function was elegant and concise. I am proud of how seamlessly
+   my SixDegrees game simulation works (with the sample test input, at least).
+   I am also proud of the modifications I made to avoid redundancy. For 
+   example, I modified the add_edge function of the Grass class so that
+   every time an edge is added, the symmetrical edge is added in the 2d array
+   edges because our graph is undirected!
+ Which would you improve if you had more time? 
+ - I would do more thorough testing. If I had all the time in the world, I 
+   would test every corner case imaginable to man, and my test-graph.cpp would
+   look super clean as well!
+ Did you complete all parts of the assignment successfully? 
+ - Yes, I believe so.
+ Are you aware of any edge cases that your program does not handle? 
+ - Not to my knowledge.
+
+
+TAKE-AWAYS
+* I really utilized bool flag flipping to my advantage in some of my functions,
+  including the SixDegrees populate function. It is a really helpful tool.
+* I became more acquainted with the big three. Instead of just memorizing the
+  pseudocode for them, this time I feel like I learned how and why they work.
+* Graphs are cool
