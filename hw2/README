@@ -1,0 +1,63 @@
+COMP 15 Homework 2: Linked Lists / MBTA Green Line
+Sejal Dua (sdua01)
+19/September/2018
+
+Program Purpose:
+The purpose of Homework 2 was to apply our knowledge of linked
+lists to help MBTA plan estensions for its Green Line service. The 
+homework specifically examined how linked lists can be advantageous
+or disadvantages when dealing with tasks such as insertions and deletions.
+Furthermore, traversing the linked list was of major relevance because
+the MBTA wanted to be able to neatly print the stops in order as if
+on a map.
+
+Acknowledgements: 
+>>> The TAs in Halligan (specifically, Maddie Payne & Saad)
+>>> A great reference site about linked lists that I found online
+(http://www.cs.cmu.edu/~clo/www/CMU/DataStructures/Lessons/lesson1_2.htm)
+
+Files:
+- Station.h/.cpp: Declaration and implementation of Station class. Contains
+info related to a single station–its name and accessibility status. Provides
+functions to access info and evaluate the equality of one station relative
+to a passed in parameter station.
+- LinkedList.h/.cpp: Declaration and implementation of LinkedList class. 
+Contains a linked list used to store green line train stations and keep them
+in a particular order. Provides functions to insert/remove stations, access
+the length or number of elements/nodes in the linked list, get the next station,
+make the linked list empty, print out information about all elements in the
+linked list, and some other functionalities.
+- train-conductor.cpp: driver file, contains a main which runs tests to insert/
+remove stations and print them all in sequential order.
+
+Compile/Run:
+* Compile by typing "make train-conductor"
+* Run by typing "./train-conductor" - will produce 2 output files as well
+as some standard output text
+
+Outline of Data Structures/Algorithms
+I used a linked list to implement this assignment, as was required. Through
+completing this assignment, I learned that linked lists have some advantages
+and disadvantages.
+--- Advantages ---
++ linked lists are dynamic: they access memory as needed during runtime, 
+unlike arraylists, for example, which require access to a significant amount
+of memory at compile time
++ insertion and deletion of nodes does not require any shifting of elements,
+only updating the address of node's "next" pointer
++ they utilize memory efficiently: memory is allocated when required and 
+deallocated when no longer needed 
+--- Disadvantages ---
+- generally consume more memory because each node requires a pointer to store
+the address of the next node, and pointers are linkages which occupy some
+bytes of memory
+- searching for an element is extremely time consuming due to the fact that
+linked lists cannot be indexed–they instead require traversal
+- reverse traversing is only possible via doubly linked lists, which again
+draws attention to the problem of time-consuming traversals 
+
+Testing:
+I used the test files provided, and used diff to compare my output to the 
+expected output. I also made a Test.cpp file which contained slight 
+variations to the driver file. I used this file to troubleshoot/debug
+the errors I was getting.
