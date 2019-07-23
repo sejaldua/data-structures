@@ -1,0 +1,406 @@
+/*********************************************************
+ * Sejal Dua
+ * Project 2: Gerp
+ * Comp 15 Fall 2018 
+ * Professor: Matias Korman
+ * 5/Decemember/2018
+ *********************************************************/
+
+
+PROGRAM PURPOSE
+
+Our task was to design a program that behaves simarly to the Unix grep program.
+The program behaves similarly to a spotlight search in that it traverses a
+large directory and finds any returns all instances of the word that was 
+searched. As far as storing a massive amount of words in a data structure such
+that runtime is not crazy ridiculous, a hash table was relevant for this
+project. Our gerp program first indexes all the files within a directory
+and then allows the user to execute search queries on the indexed directory.
+
+
+ACKNOWLEDGMENTS
+
+* Google / Stack overflow
+* Kevin Destin (TA)
+* Jay (TA)
+* Piazza posts
+* Ryan Weinstein
+* Amber Chong
+* Anika Agarwal
+* Late-night breakthrough moments
+
+
+FILES AND DESCRIPTIONS
+
+-->> source code <<--
+FSTree.h		: interface of FSTree class  (used to explore file directories)
+FSTree.o		: compiled version of FSTree.cpp
+DirNode.h 		: interface of DirNode class (nodes used in FSTree)
+DirNode.o 		: compiled version of DirNode.cpp
+the_gerp		: compiled solution of this assignment (for comparing purposes)
+sampleExecution : files to test your program (one input and three outputs)
+test-dirs 		: simple template stack class used for DFS
+README 			: this file
+
+-->> files worked on in Phase 1 <<--
+FSTree-			: traverses the file system, listing all files and subdirs
+Traversal.cpp  	  in a given directory (entered via command line arg)
+					   
+String-			: strips leading and trailing non-alphanumeric chars
+Processing.cpp    from query string (entered on standard in)
+					   
+
+-->> files worked on in Phase 2 <<--
+Entry.h 		: interface of the Entry class (storage of strs & occurrences)
+Entry.cpp		: implementation of the Entry class
+Hash.h 			: interface of the Hash class
+Hash.cpp		: implementation of the Hash class (the index)
+Gerp.h 			: interface of the Gerp class
+Gerp.cpp		: implementation of the Gerp class (fills and accesses hash)
+main.cpp		: main driver of the project (creates Gerp obj, runs queries)
+
+
+COMPILE / RUN INSTRUCTIONS
+
+* clean
+	>>> make clean
+* make executable
+	>>> make gerp
+* run executable
+	>>> ./gerp [filepath]
+* valgrind
+	>>> valgrind ./gerp [filepath]
+* test queries
+	>>> ./gerp [filepath] < test_queries.txt > [output .txt]
+
+
+DATA STRUCTURES / ALGORITHMS
+
+Hash Tables (Vectors)
+Hash tables store data in an associative manner such that each hash value has
+a unique index value that is obtained via a mapping (string --> word) function
+called a hash function. With this method, accessing data is among the fastest
+of all data structures, providing that we know the index of the desired data.
+The advantages of hash tables include super fast insertion and search 
+operations, irrespective of the size of the data. Below is a list of bullet
+points detailing why the hash function is important and what it must do:
+
+Hash function and compression
+- must be FAST
+- must work well for all possible input values
+- must be well distributed (hard for 2 keys to land on same spot)
+- must be dterministic (no randomness)
+
+>>> I used the c++ functional library to optimize the quality of my hash
+    function and hopefully get a better distribution of indices and thus,
+    faster runtime.
+
+Now, as with any data structure, there are some problems we have to consider.
+Even though the hash function from the c++ functional library is very robust,
+we still have to consider the case of collisions. Let's suppose that the word
+"apple" and the word "banana" both happen to map to the index 132. Well, we
+must handle this so-called collision. To do this, we can choose between either
+chaining (open hashing) and open addressing (closed hashing). Below is a 
+comparison of the two collision collision-resolution techniques:
+
+REFERENCE: http://occcwiki.org/index.php/Hash_Tables
+
+Chaining (open hashing)
+advantages: 
+	* expand is less important and can be postponed for a much longer time
+	  because performance degrades more gracefully even when the load factor
+	  is 1.0
+	* simple to implement-- only require basic data structures
+	* insensitive to clustering-- only need to focus on collision resolution
+	* uses less memory compared to open addressing
+	* great if table is expected to have high load factor (evenly distributed
+	  mapping of indices), records are large, and/or data is variably-sized
+disadvantages:
+	* similar to disadvantages of linked lists: traversing takes more time
+	* can contain a large proportion of empty slots which contributes to 
+	  wasted space
+
+Open Addressing (closed hashing)
+advantages:
+	* more space-efficient than chaining-- no need to allocate additional space
+	* insertions have speedier runtime because no need for memory allocation
+	* it uses internal storage -> better locality of reference (faster queries)
+	* great for hash tables with small records (particularly suitable for
+	  elements of 1 word or less)
+disadvantages:
+	* poor choice for large elements & large number of elements
+	* large amount of space is wasted on empty slots
+
+>>> After weighing chaining vs. open addressing, I ended up going with chaining
+    just because it made the most sense to me, adn it was very obvious to me 
+    how I would implement it. 
+
+As far as design considerations, I went back and forth a lot. I was very 
+indecisive, which seems to be a trend with big comp sci projects for me.
+I originally thought I would tackle this project by doing a vector of Linked
+List of Entry objects, which contain a string word, string filepath, int
+line_num, and string line. Despite the fact that this was just my initial
+brainstorm, it was incredibly naive in terms of space usage and runtime
+considerations. My program definitely wouldn't have been able to do 
+largeGutenberg in 10 minutes. If you imagine largeGutenberg has a million
+instance of the word "the", it almost gives you a headache just thinking about
+how long the traversals would take. 
+
+I slowly started to have a paradigm shift as I thought about the task more and
+more. If you think about a 2D data structure (an effect of using chaining
+to resolve collisions), it is quite comparable to a map/grid of streets.
+Now, say my friend is on 13th and Alder (a street in my town) and I want to
+tell them how to find my house on 5th and Hoyt (the vertical streets are in 
+ascending order, the horizontal streets are in alphabetical order). It would be
+a waste of time to go all the way through 12th street looking for my house and
+then go back to 12th and Alder, only to traverse 11th street looking for my 
+house again. All that's necessary is to traverse n vertical streets and m
+horizontal streets. My friend should walk to 5th and Alder and then go from 
+Alder to Burnside to Couch to Davis to Everett to Flanders to Glisan to Hoyt.
+This is how I determined by data structure must at least be 2-dimensional.
+
+As far as advantageous features of my design, I decided to use a data structure
+that dynamically allocates memory. Furthermore, I found a way to abstract my 
+data types in such a way that I store minimal data in my actual hash data
+structure for optimal runtime performance. Regarding how to handle a million
+instance of the word "the", I chunked this data together into an Entry object
+that I defined and implemented (see Entry.cpp). This object not only contained
+a lowercase string of the word being hashed into the table, but it contained
+vectors to keep track of various occurrences of the word (storing case
+variations, indices to an external filepath vector, and line numbers in the
+filepath the occurrence of the word came from). I went back and forth on 
+whether or not I wanted to use the templated LinkedList class given to us in
+HW5. I ended up deciding against it just because the templating complicated my
+design vision and vectors had all the built-in functions I needed; they were
+perfect for my purposes. In the end, I decided to implement my program with a
+vector of vector of Entry objects. See my beautiful design below:
+
+DESIGN
+
+vector<vector<Entry> > hash_vec
+ _______________________________________________________________
+|   _________   |				|   _________	|	_________	|
+|  |  Entry	 |	|	~~~~~~~~~~	|  |  Entry  |	|  |  Entry  |	|
+|  |  str    |	|	not mapped	|  |  str	 |	|  |  str 	 |	|
+|  |  occurs |	|	to yet		|  |  occurs | 	|  |  occurs |	|
+|  |_________|	|	~~~~~~~~~~	|  |_________|	|  |_________|  |
+|__|__Entry__|__|_______________|_______________|__|__Entry__|__|
+   |  str    |					          		   |  strs   |
+   |  occurs |				                       |  occurs |   
+   |_________|									   |_________|
+   |  Entry  |
+   |  str    |
+   |  occurs |
+   |_________|
+
+
+Big O Analysis
+Hash tables (generally)
+			Average		Worst case
+Insert 	 	O(1)		O(n)
+Search 		O(1)		O(n)
+Delete		O(1)		O(n)
+
+With chaining and the specific features of this gerp program, the runtime is
+obviously slightly more complex, but it was still pretty good for files of
+this magnitude.
+
+
+ALGORITHMS
+
+>>> Gerp::Parse File
+
+concept:
+suppose a line in a file reads "gerp gerp gerp gerp gerp gerp gerp"
+it would be unnecessary to hash each instance of "gerp" because when we query
+"gerp", the filepath, line number, and line of each of the 7 occurrences
+would be exactly identical.... implementation below
+
+- process file line by line (getline)
+	- process each line by using >> to get each word
+	- push back word into a vector called line_strs
+	- if the current word in the line is not empty and not present in line_strs
+		- insert it into the hash
+	- increment line num counter
+	- clear line_strs
+- push back file path into vector of filepaths
+- increment path index
+
+>>> Gerp::Populate Hash
+
+concept:
+recursive
+heavily drawn from FSTreeTraversal.cpp [See Phase 1]
+
+>>> Gerp::Query
+
+concept:
+- instantiate Entry object with query string (using parameterized constructor)
+- call Hash search function, passing in Entry object
+- if the queried Entry object is returned
+	- cout not found
+- else
+	* CASE SENSITIVE *
+		- iterate through occurrences of the word and cout the info of all the 
+		  occurrences which match the cases of the queried string
+		- if no occurrences match the case perfectly
+			- cout not found
+	* CASE INSENSITIVE 
+		- iterate through occurences of the word and cout all occurrence info
+
+>>> Hash::Insert
+
+concept:
+- check load factor to see if we have to expand
+- map hash word to an index value via hash function
+- at that index, check if we have multiplicity
+- if so
+	- add to pre-existing Entry obj.
+	- return
+- make an Entry obj., input information, and push back into hash_vec
+
+>>> Hash::Search
+
+concept:
+- extract string from query entry and convert to lowercase
+- map query word to an index value via hash function
+- iterate through subvector / bucket at given index spot in the hash_vec
+- get Entry objects and compared word they hold with query word
+- if match
+	- return found Entry object
+- catch-all: return input Entry obj. back out
+
+>>> Hash::Expand
+
+concept:
+- make a new vector and assign old vector into new
+- clear and resize old hash vector, making room for twice the capacity
+- reset private member variables
+- transfer contents of old vector into new vector via transfer function
+- releases memory 
+
+
+ABSTRACTION
+I implemented this project similar to the way HW5 was pre-implemented for us.
+I had a Hash class, a Gerp class (to access and modify a paricular object of 
+Hash type), and a main.cpp to make a Gerp object and let the user interact
+with the program. The Hash class included Entry.h and was the class in which
+the most abstraction took place. To implement my hash with a vector of vector
+of Entry objects, I actually had it quite easy. I used resize(), push_back()
+and clear() mainly. I also used reserve() occasionally, but I didn't really
+have to worry about making a constructor, destructor, assignment operator, etc.
+I am most proud of the way my classes interacted with my Entry class. I thought
+my interaction of ADTs was very time-efficient.
+
+
+
+TESTING
+--- process of testing / methodical testing approach ---
+I unit tested as I went. As far as coding, I wrote Entry.cpp first becuase it 
+was oddly similar to Actor.cpp from the last homework. Naturally, I had to unit
+test that. I just made an Entry object in the main, added some stuff into it, 
+and then used my getters to see if everything was working properly. Then, I 
+ended up commenting all my code and trying to switch implementations to a 
+struct called Entry. I eventually went back, though. I couldn't make up my mind
+for the longest time. Anyways, once I knew that was working, I skeleton'd 
+(outlined) my Hash class by writing the functions I would need into Hash.h. 
+At its most basic level, these included a constructor, insert(), search(), 
+hash_function(), expand(), and check_load_factor(). Where I faltered was not 
+unit testing my Hash class thoroughly enough. This presented me with plenty of 
+errors after I had a somewhat functional Gerp class and started calling public 
+functions with my Hash object private to the Gerp class. However, I did not 
+mind the debugging very much. Maybe I'm getting better at bugging, but I 
+noticed that this process was not very painful at all. Actually, it was quite 
+easy and satisfying finding all the bugs in my code. I eventually got my Hash 
+class working well (insert was most challenging), and then I modularized and 
+beautified it. As for my Gerp class and main.cpp, there wasn't much testing to
+do, per se. I mean, I ran ./gerp on many many directories to test if it was
+able to work on tinyData, smallGutenberg, etc., but I did not do separate
+testing. I actually encountered more algorithmic bugs or errors in logic, if
+that makes sense. Those became clear to me when testing on the sampleExecution
+given to us. I think that, in the end, my testing was pretty thorough. It
+wasn't the most conventional, but it managed to get me to my final working code
+without much of a hassle (aside from the major bug listed below)!
+
+I tested for corner cases and edge cases using the command line arguments
+and the standard in when the program prompts "Query? "
+Here is what I queried for:
+--- corner cases / edge cases / misc. tests ---
+the
+THE
+@i tHe
+***comp15***
+hi*&^
+***i've
+zebra
+Hei
+@itell
+str!ange
+SATURDAY
+brunch
+Dionysius
+slave
+Sejal
+
+--- mention of bugs ---
+  >> EFFICIENCY/TRAVERSAL BUG (finding this at 2am was the highlight of my day)
+  	 In Gerp::parse_file, when I check if ss >> word gives us a word that we
+  	 have already inserted from the current line's strings into the hash, I was
+  	 never clearing my line_strs vector, so as I parsed each file, my line_strs
+  	 was slowly but surely becoming the size of the number of words in my file.
+  	 Interestingly, even with this oversight, my largeGutenberg completed in
+  	 somewhere between 9-13 minutes.
+  >> linker command error
+     I did "make clean" pretty early on and it gets rid of all .o files, but I 
+     neglected to realize that making clean removed DirNode.o and FSTree.o for
+     me, and since those .o files are not regenerated, I was getting a linker
+     command error which took me forever to figure out. I solved this bug by
+     re-cp-ing the starter code into my proj2 folder.
+  >> Seg Faults all over the place
+  	 With this assignment, I felt like I needed to just get down to writing the
+  	 code so that I could compile and execute ./gerp, but since I did not
+  	 complete thorough unit testing before attempting to execute, I had to
+  	 compensate for my poor practice by throwing cerr statements everywhere to
+  	 track down seg faults.
+  >> Faulty @i and case sensitive querying
+  	 Conceptually, it took me a bit of trial and error to design my algorithm
+  	 for case sensitive vs. case insensitive querying.
+  >> Entry get_index() function was always returning 1 more than the number
+  	 it was supposed to return. To solve this, I instantiated it to be -1 in
+  	 the Entry() constructor.
+  >> When running smallGutenberg, I discovered that my StringProcessing
+  	 (strip_string()) function was not robust enough to know what to do when
+  	 passed "***". This was a pretty quick fix, but I'm glad I caught it.
+
+
+RESULTS
+
+tinyData			: < 1 second
+smallGutenberg		: < 5 seconds
+mediumGutenberg		: < 20 seconds
+largeGutenberg		: ~ 1:30 seconds (w/o expand) (YAY)
+					: ~ 1:15 seconds (w/ expand)  (YAYYYYY)
+
+- clean valgrind report
+- successfully diffed output .txt files
+- (well) under 10 minutes runtime
+
+some optimizations to be mindful of when running:
+- on Tufts Secure?
+- try force quitting terminal and re-opening
+
+
+OTHER / TAKE-AWAYS
+(*) how hash tables work
+(*) collision resolution via chaining
+(*) the differences and advantages & disadvantages of structs vs. objects
+(*) how handy vectors are!
+(*) runtime considerations
+(*) space usage
+(*) how to minimize traversals
+(*) importance of passing variables into functions by reference
+(*) that taking the time to design is the key to a good project
+(*) the flexibility to adapt
+(*) that being indecisive wastes a significant amount of my time
+(*) that I care a lot about elegant code, but I should focus on function first
+(*) that I really liked this class and I'm actually going to miss coding
